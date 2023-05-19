@@ -23,7 +23,7 @@ export async function signIn(req, res) {
     const { idUser } = res.locals;
     try {
         await db.query(`INSERT INTO sessions ("userId", token) VALUES ($1, $2);`, [idUser, token]);
-        res.send("Login efetuado com sucesso.");
+        res.status(200).send({token});
     } catch (error) {
         res.status(500).send(error.message);
     }

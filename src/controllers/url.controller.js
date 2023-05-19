@@ -4,19 +4,22 @@ import { nanoid } from 'nanoid'
 export async function addUrl(req, res) {
     const { url } = req.body;
     const { userId } = res.locals.session;
-    const shortUrl = nanoid(8);
+    const newShortUrl = nanoid(8);
     try {
         await db.query(`
             INSERT INTO urls ("userId", "shortUrl", "trueUrl")
             VALUES ($1, $2, $3);`,
-            [userId, shortUrl, url]
+            [userId, newShortUrl, url]
         );
+
         const urlCreated = await db.query(`
             SELECT id, "shortUrl" FROM urls
             WHERE "shortUrl" = $1;`,
-            [shortUrl]
+            [newShortUrl]
         );
-        res.status(201).send({ id: urlCreated.rows[0].id, shortUrl: urlCreated.rows[0].shortUrl });
+        const { id, shortUrl } = urlCreated.rows[0];
+
+        res.status(201).send({ id, shortUrl });
     } catch (error) {
         res.status(500).send(error.message);
     }
@@ -29,14 +32,26 @@ export async function getUrlId(req, res) {
 
 export async function openUrl(req, res) {
     const { shortUrl } = req.params;
-    try {
-        const url = await db.query(`SELECT "trueUrl", "visitCount" FROM urls WHERE "shortUrl" = $1;`, [shortUrl]);
-        if (!url.rowCount) return res.status(404).send("Url não existente");
 
-        const { trueUrl, visitCount } = url.rows[0];
+    try {
+        const { trueUrl, visitCount } = res.locals.url;
         await db.query(`UPDATE urls SET "visitCount" = $1 WHERE "shortUrl" = $2;`, [visitCount + 1, shortUrl]);
 
         res.redirect(trueUrl);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+}
+
+export async function deleteUrl(req, res) {
+    const { id } = req.params;
+    const { userId } = res.locals.session;
+
+    try {
+        if(userId!==res.locals.url.userId) return res.sendStatus(401);
+        
+        await db.query(`DELETE FROM urls WHERE id = $1;`, [id]);
+        res.status(204).send("Url excluída");
     } catch (error) {
         res.status(500).send(error.message);
     }
