@@ -12,7 +12,7 @@ export async function signUp(req, res) {
             VALUES ($1, $2, $3);`,
             [name, email, hash]
         );
-        res.send("Usuário cadastrado");
+        res.status(201).send("Usuário cadastrado");
     } catch (error) {
         res.status(500).send(error.message);
     }
