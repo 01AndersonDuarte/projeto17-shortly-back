@@ -39,7 +39,7 @@ export async function userData(req, res) {
             'id', l.id, 'shortUrl', l."shortUrl", 'url', l."trueUrl",
             'visitCount', l."visitCount")) 
         AS "shortenedUrls"
-        FROM users u JOIN urls l
+        FROM users u LEFT JOIN urls l
         ON u.id = l."userId" WHERE u.id = $1 GROUP BY u.id;`, [userId]);
 
         res.send(userData.rows[0])
