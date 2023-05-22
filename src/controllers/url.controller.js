@@ -51,7 +51,7 @@ export async function deleteUrl(req, res) {
         if(userId!==res.locals.url.userId) return res.sendStatus(401);
         
         await db.query(`DELETE FROM urls WHERE id = $1;`, [id]);
-        res.status(204).send("Url excluída");
+        res.sendStatus(204);
     } catch (error) {
         res.status(500).send(error.message);
     }

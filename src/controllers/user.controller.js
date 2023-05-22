@@ -52,7 +52,7 @@ export async function ranking(req, res) {
     try {
         const userData = await db.query(`
         SELECT u.id, u.name, COUNT(l.id) AS "linksCount", SUM(l."visitCount") AS "visitCount"
-        FROM users u LEFT JOIN urls l
+        FROM users u JOIN urls l
         ON u.id = l."userId" GROUP BY u.id  ORDER BY "visitCount" DESC LIMIT 10;`);
 
         res.send(userData.rows);
